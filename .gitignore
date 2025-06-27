@@ -1,0 +1,42 @@
+# === Node & React (client/server) ===
+
+# Node dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Production builds
+build/
+client/build/
+server/build/
+dist/
+
+# Testing
+coverage/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+server/.env
+client/.env
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
+.pnp
+.pnp.js
+
+# VS Code
+.vscode/
+
+# Cache
+.cache/
+.next/
+out/
