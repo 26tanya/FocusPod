@@ -8,6 +8,7 @@ import SoloRoom from './pages/SoloRoom';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import CreateRoomPage from './pages/CreateRoomPage';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-otp" element={<VerifyOtpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/create-room" element={<CreateRoomPage />} />
         <Route
           path="/dashboard"
           element={

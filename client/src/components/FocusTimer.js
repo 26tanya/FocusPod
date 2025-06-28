@@ -1,65 +1,83 @@
 import React, { useState, useEffect, useRef } from 'react';
 import socket from '../socket';
 import { useAuth } from '../context/AuthContext';
-import CircularProgress from './CircularProgress'; // adjust path if needed
+import CircularProgress from './CircularProgress';
 
-const FocusTimer = ({ roomCode, isSolo = false }) => {
+const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator = false }) => {
   const { user } = useAuth();
 
-  const [minutes, setMinutes] = useState(25);
+  const [minutes, setMinutes] = useState(initialDuration);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-
-  const [internalRoomCode, setInternalRoomCode] = useState('');
   const timerRef = useRef(null);
 
-  const activeRoomCode = isSolo ? null : roomCode || internalRoomCode;
+  const initialTotal = useRef(initialDuration * 60);
   const totalSeconds = minutes * 60 + seconds;
-  const initialTotal = useRef(minutes * 60); // hold original total time
   const progress = 100 - (totalSeconds / initialTotal.current) * 100;
 
-  // Join room (group only)
+  // ✅ Emit duration if creator
   useEffect(() => {
-    if (activeRoomCode) {
-      socket.emit('join-room', activeRoomCode);
+    if (!isSolo && isCreator && roomCode) {
+      socket.emit('set-duration', { roomCode, duration: initialDuration });
     }
-  }, [activeRoomCode]);
+  }, [roomCode, initialDuration, isCreator, isSolo]);
 
-  // Timer countdown logic
+  // ✅ Sync duration for non-creators
+  useEffect(() => {
+    if (!isSolo && !isCreator) {
+      socket.on('set-duration', (duration) => {
+        setMinutes(duration);
+        setSeconds(0);
+        initialTotal.current = duration * 60;
+        console.log('⏱️ Synced timer with duration:', duration);
+      });
+
+      // Ask server in case missed initial emit
+      socket.emit('get-duration', roomCode);
+      socket.on('send-duration', (duration) => {
+        setMinutes(duration);
+        setSeconds(0);
+        initialTotal.current = duration * 60;
+      });
+
+      return () => {
+        socket.off('set-duration');
+        socket.off('send-duration');
+      };
+    }
+  }, [isCreator, roomCode]);
+
+  // ✅ Timer countdown
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => {
-        setSeconds((prevSeconds) => {
-          if (prevSeconds === 0) {
-            setMinutes((prevMinutes) => {
-              if (prevMinutes === 0) {
+        setSeconds((prev) => {
+          if (prev === 0) {
+            setMinutes((m) => {
+              if (m === 0) {
                 clearInterval(timerRef.current);
                 setIsRunning(false);
-                const endSound = new Audio('/sounds/timer-end.mp3');
-                endSound.play();
+                new Audio('/sounds/timer-end.mp3').play();
                 alert('⏰ Time is up!');
                 return 0;
               }
-              return prevMinutes - 1;
+              return m - 1;
             });
             return 59;
           }
-          return prevSeconds - 1;
+          return prev - 1;
         });
       }, 1000);
-    } else {
-      clearInterval(timerRef.current);
     }
-
     return () => clearInterval(timerRef.current);
   }, [isRunning]);
 
-  // Socket listeners (group only)
+  // ✅ Socket timer events
   useEffect(() => {
-    const handleStart = ({ startTime }) => {
+    socket.on('start-timer', ({ startTime }) => {
       const now = Date.now();
       const elapsed = Math.floor((now - startTime) / 1000);
-      const duration = 25 * 60;
+      const duration = initialTotal.current;
       const remaining = duration - elapsed;
 
       if (remaining > 0) {
@@ -72,48 +90,37 @@ const FocusTimer = ({ roomCode, isSolo = false }) => {
         setIsRunning(false);
         alert('⏰ Time is up!');
       }
-    };
+    });
 
-    const handlePause = () => setIsRunning(false);
-    const handleReset = () => {
+    socket.on('pause-timer', () => setIsRunning(false));
+    socket.on('reset-timer', () => {
       setIsRunning(false);
-      setMinutes(25);
+      setMinutes(initialTotal.current / 60);
       setSeconds(0);
-    };
-
-    socket.on('start-timer', handleStart);
-    socket.on('pause-timer', handlePause);
-    socket.on('reset-timer', handleReset);
+    });
 
     return () => {
-      socket.off('start-timer', handleStart);
-      socket.off('pause-timer', handlePause);
-      socket.off('reset-timer', handleReset);
+      socket.off('start-timer');
+      socket.off('pause-timer');
+      socket.off('reset-timer');
     };
   }, []);
 
   const handleStart = () => {
-    if (activeRoomCode) {
-      socket.emit('start-timer', activeRoomCode);
-    } else {
-      setIsRunning(true);
-    }
+    if (roomCode) socket.emit('start-timer', roomCode);
+    else setIsRunning(true);
   };
 
   const handlePause = () => {
-    if (activeRoomCode) {
-      socket.emit('pause-timer', activeRoomCode);
-    } else {
-      setIsRunning(false);
-    }
+    if (roomCode) socket.emit('pause-timer', roomCode);
+    else setIsRunning(false);
   };
 
   const handleReset = () => {
-    if (activeRoomCode) {
-      socket.emit('reset-timer', activeRoomCode);
-    } else {
+    if (roomCode) socket.emit('reset-timer', roomCode);
+    else {
       setIsRunning(false);
-      setMinutes(25);
+      setMinutes(initialTotal.current / 60);
       setSeconds(0);
     }
   };
@@ -122,54 +129,22 @@ const FocusTimer = ({ roomCode, isSolo = false }) => {
     <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto text-center mt-6">
       <h2 className="text-2xl font-semibold mb-2">🎯 Focus Timer</h2>
 
-      {isSolo ? (
-  <p className="text-sm text-gray-500 mb-2">🧘 Solo Session</p>
-) : (
-  activeRoomCode && <p className="text-sm text-gray-500 mb-2"></p>
-)}
+      {!isSolo && <p className="text-sm text-gray-500 mb-2">Room Code: {roomCode}</p>}
 
-{!isSolo && !roomCode && (
-  <div className="mb-4">
-    <input
-      type="text"
-      placeholder="Enter Room Code"
-      value={internalRoomCode}
-      onChange={(e) => setInternalRoomCode(e.target.value)}
-      className="border p-2 rounded w-full"
-    />
-  </div>
-)}
+      <CircularProgress percentage={progress} />
 
-{/* ⭕ Circular progress ring */}
-<CircularProgress percentage={progress} />
+      <div className="text-6xl font-mono mb-6">
+        {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+      </div>
 
-<div className="text-6xl font-mono mb-6">
-  {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-</div>
-
-<div className="flex justify-center gap-4 mb-6">
-  {!isRunning ? (
-    <button
-      onClick={handleStart}
-      className="px-4 py-2 bg-green-500 text-white rounded-xl shadow"
-    >
-      Start
-    </button>
-  ) : (
-    <button
-      onClick={handlePause}
-      className="px-4 py-2 bg-yellow-500 text-white rounded-xl shadow"
-    >
-      Pause
-    </button>
-  )}
-  <button
-    onClick={handleReset}
-    className="px-4 py-2 bg-red-500 text-white rounded-xl shadow"
-  >
-    Reset
-  </button>
-</div>
+      <div className="flex justify-center gap-4 mb-6">
+        {!isRunning ? (
+          <button onClick={handleStart} className="px-4 py-2 bg-green-500 text-white rounded-xl shadow">Start</button>
+        ) : (
+          <button onClick={handlePause} className="px-4 py-2 bg-yellow-500 text-white rounded-xl shadow">Pause</button>
+        )}
+        <button onClick={handleReset} className="px-4 py-2 bg-red-500 text-white rounded-xl shadow">Reset</button>
+      </div>
     </div>
   );
 };

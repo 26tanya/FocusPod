@@ -12,7 +12,7 @@ const [joinCode, setJoinCode] = useState('');
 
 const handleCreateRoom = () => {
 const roomCode = nanoid(6); // generate 6-character room ID
-navigate(`/room/${roomCode}`);
+navigate(`/create-room`);
 };
 
 const handleJoinRoom = () => {

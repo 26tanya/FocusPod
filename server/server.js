@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
-
+const roomDurations = {};
 require('dotenv').config();
 
 const app = express();
@@ -141,8 +141,18 @@ socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500 }) 
     }
     io.to(roomCode).emit('stop-timer');
   });
-
+   
   
+  socket.on('set-duration', ({ roomCode, duration }) => {
+  roomDurations[roomCode] = duration;
+  io.to(roomCode).emit('set-duration', duration); // broadcast to room
+  });
+   
+  socket.on('get-duration', (roomCode) => {
+  if (roomDurations[roomCode]) {
+    socket.emit('send-duration', roomDurations[roomCode]);
+    }
+  });
 
   // ✅ Disconnection
   socket.on('disconnect', () => {
