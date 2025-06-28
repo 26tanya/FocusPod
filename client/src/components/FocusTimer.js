@@ -127,7 +127,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto text-center mt-6">
-      <h2 className="text-2xl font-semibold mb-2">🎯 Focus Timer</h2>
+      <h2 className="text-2xl font-semibold mb-2"> Focus Timer</h2>
 
       {!isSolo && <p className="text-sm text-gray-500 mb-2">Room Code: {roomCode}</p>}
 
@@ -138,13 +138,33 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
       </div>
 
       <div className="flex justify-center gap-4 mb-6">
-        {!isRunning ? (
-          <button onClick={handleStart} className="px-4 py-2 bg-green-500 text-white rounded-xl shadow">Start</button>
-        ) : (
-          <button onClick={handlePause} className="px-4 py-2 bg-yellow-500 text-white rounded-xl shadow">Pause</button>
-        )}
-        <button onClick={handleReset} className="px-4 py-2 bg-red-500 text-white rounded-xl shadow">Reset</button>
-      </div>
+  {!isRunning ? (
+        <button
+          onClick={handleStart}
+          disabled={!isCreator && !isSolo}
+          className="px-4 py-2 rounded-xl shadow text-white bg-green-500 hover:bg-green-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Start
+        </button>
+      ) : (
+        <button
+          onClick={handlePause}
+          disabled={!isCreator && !isSolo}
+          className="px-4 py-2 rounded-xl shadow text-white bg-yellow-500 hover:bg-yellow-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Pause
+        </button>
+      )}
+
+      <button
+        onClick={handleReset}
+        disabled={!isCreator && !isSolo}
+        className="px-4 py-2 rounded-xl shadow text-white bg-red-500 hover:bg-red-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Reset
+      </button>
+</div>
+
     </div>
   );
 };

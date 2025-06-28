@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
-const roomDurations = {};
 require('dotenv').config();
 
 const app = express();
@@ -15,8 +14,10 @@ const io = require('socket.io')(http, {
 });
 
 const usersInRooms = {};
-const timerState = {}; // Track timer state per room
-const rooms = {}; 
+const timerState = {};
+const roomDurations = {};
+const rooms = {}; // ✅ Keep at top
+
 // ✅ Connect MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
@@ -45,52 +46,42 @@ app.use('/api/rooms', roomRoutes);
 // ✅ Basic test route
 app.get('/', (req, res) => res.send('🎯 FocusPod API Running'));
 
-// ✅ SOCKET.IO - Group Room & Timer Support
+// ✅ SOCKET.IO
 io.on('connection', (socket) => {
   console.log('🔌 New client connected:', socket.id);
 
-  const rooms = {}; // Place this at the top of your file if not already declared
+  socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500, isCreator = false }) => {
+    socket.join(roomCode);
+    console.log(`🟢 ${name} (${socket.id}) joined room: ${roomCode}`);
 
-socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500 }) => {
-  socket.join(roomCode);
-  console.log(`🟢 ${name} (${socket.id}) joined room: ${roomCode}`);
+    // ✅ Save creator on first join
+    if (!rooms[roomCode]) {
+      rooms[roomCode] = {
+        creatorId: socket.id,
+        mode,
+        duration: Number(duration),
+      };
+      console.log(`🌟 ${socket.id} is now creator of room: ${roomCode}`);
+    }
 
-  // If room doesn't exist yet, this user is the creator
-  if (!rooms[roomCode]) {
-    rooms[roomCode] = {
-      creatorId: socket.id,
-      mode,                  // 'pomodoro' or 'custom'
-      duration: Number(duration), // in seconds
-    };
-    console.log(`🌟 ${socket.id} is now creator of room: ${roomCode}`);
-  }
+    if (!usersInRooms[roomCode]) usersInRooms[roomCode] = [];
 
-  // Track users in the room
-  if (!usersInRooms[roomCode]) {
-    usersInRooms[roomCode] = [];
-  }
+    const alreadyJoined = usersInRooms[roomCode].some(user => user.id === socket.id);
+    if (!alreadyJoined) {
+      usersInRooms[roomCode].push({ id: socket.id, name: name || 'Anon' });
+    }
 
-  const alreadyJoined = usersInRooms[roomCode].some(user => user.id === socket.id);
-  if (!alreadyJoined) {
-    usersInRooms[roomCode].push({ id: socket.id, name: name || 'Anon' });
-  }
-
-  // Emit user list and room config to room
-  io.to(roomCode).emit('room-users', usersInRooms[roomCode]);
-  io.to(roomCode).emit('room-config', rooms[roomCode]);
-});
-
+    io.to(roomCode).emit('room-users', usersInRooms[roomCode]);
+    io.to(roomCode).emit('room-config', rooms[roomCode]);
+  });
 
   // ✅ Chat
   socket.on('chat-message', ({ roomCode, message, sender }) => {
-    console.log(' Chat message received:', { roomCode, message, sender });
-
     const chatData = {
       sender,
       message,
       timestamp: new Date().toISOString(),
     };
-
     io.to(roomCode).emit('chat-message', chatData);
   });
 
@@ -98,8 +89,10 @@ socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500 }) 
     socket.to(roomCode).emit('typing', { sender });
   });
 
-  // ✅ Timer logic (unchanged)
+  // ✅ Timer: Only creator can control
   socket.on('start-timer', (roomCode) => {
+    if (socket.id !== rooms[roomCode]?.creatorId) return;
+
     if (!timerState[roomCode]) {
       timerState[roomCode] = {
         startTime: Date.now(),
@@ -117,6 +110,8 @@ socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500 }) 
   });
 
   socket.on('pause-timer', (roomCode) => {
+    if (socket.id !== rooms[roomCode]?.creatorId) return;
+
     if (timerState[roomCode]?.isRunning) {
       timerState[roomCode].elapsedBeforePause = Date.now() - timerState[roomCode].startTime;
       timerState[roomCode].isRunning = false;
@@ -126,6 +121,8 @@ socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500 }) 
   });
 
   socket.on('reset-timer', (roomCode) => {
+    if (socket.id !== rooms[roomCode]?.creatorId) return;
+
     timerState[roomCode] = {
       startTime: 0,
       elapsedBeforePause: 0,
@@ -136,37 +133,46 @@ socket.on('join-room', ({ roomCode, name, mode = 'pomodoro', duration = 1500 }) 
   });
 
   socket.on('stop-timer', (roomCode) => {
+    if (socket.id !== rooms[roomCode]?.creatorId) return;
+
     if (timerState[roomCode]) {
       timerState[roomCode].isRunning = false;
     }
+
     io.to(roomCode).emit('stop-timer');
   });
-   
-  
+
+  // ✅ Set duration (optional feature if needed for custom changes)
   socket.on('set-duration', ({ roomCode, duration }) => {
-  roomDurations[roomCode] = duration;
-  io.to(roomCode).emit('set-duration', duration); // broadcast to room
+    roomDurations[roomCode] = duration;
+    io.to(roomCode).emit('set-duration', duration);
   });
-   
+
   socket.on('get-duration', (roomCode) => {
-  if (roomDurations[roomCode]) {
-    socket.emit('send-duration', roomDurations[roomCode]);
+    if (roomDurations[roomCode]) {
+      socket.emit('send-duration', roomDurations[roomCode]);
     }
   });
 
-  // ✅ Disconnection
+  // ✅ Handle disconnect
   socket.on('disconnect', () => {
     console.log('❌ Client disconnected:', socket.id);
 
     for (const room in usersInRooms) {
-      const updated = usersInRooms[room]?.filter(user => user.id !== socket.id);
-      usersInRooms[room] = updated;
+      usersInRooms[room] = usersInRooms[room].filter(user => user.id !== socket.id);
+      io.to(room).emit('room-users', usersInRooms[room]);
 
-      io.to(room).emit('room-users', updated);
+      // If the creator leaves, delete room (optional)
+      if (rooms[room]?.creatorId === socket.id) {
+        delete rooms[room];
+        delete timerState[room];
+        delete roomDurations[room];
+        console.log(`🗑️ Room ${room} deleted (creator left)`);
+      }
     }
   });
 });
 
-// ✅ Start Server
+// ✅ Start server
 const PORT = process.env.PORT || 5000;
 http.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
