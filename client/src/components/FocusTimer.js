@@ -142,7 +142,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
         <button
           onClick={handleStart}
           disabled={!isCreator && !isSolo}
-          className="px-4 py-2 rounded-xl shadow text-white bg-green-500 hover:bg-green-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className="px-4 py-2 rounded-xl shadow text-white bg-green-500 hover:bg-green-600 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Start
         </button>
@@ -150,7 +150,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
         <button
           onClick={handlePause}
           disabled={!isCreator && !isSolo}
-          className="px-4 py-2 rounded-xl shadow text-white bg-yellow-500 hover:bg-yellow-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className="px-4 py-2 rounded-xl shadow text-white bg-yellow-500 hover:bg-yellow-600 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Pause
         </button>
@@ -159,7 +159,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
       <button
         onClick={handleReset}
         disabled={!isCreator && !isSolo}
-        className="px-4 py-2 rounded-xl shadow text-white bg-red-500 hover:bg-red-600 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
+        className="px-4 py-2 rounded-xl shadow text-white bg-red-500 hover:bg-red-600 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
       >
         Reset
       </button>

@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import FocusTimer from '../components/FocusTimer';
 import PomodoroTimer from '../components/PomodoroTimer';
-import ModeSelector from '../components/ModeSelector';
 import Notes from '../components/Notes';
+import { useSearchParams } from 'react-router-dom';
+
 const SoloRoom = () => {
-  const [selectedMode, setSelectedMode] = useState('custom'); // default mode
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode') || 'custom';
+  const duration = parseInt(searchParams.get('duration')) || 25;
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
-      <ModeSelector selectedMode={selectedMode} setSelectedMode={setSelectedMode} />
-
-      {selectedMode === 'custom' ? (
-        <FocusTimer isSolo />
+      {mode === 'custom' ? (
+        <FocusTimer isSolo initialDuration={duration} />
       ) : (
         <PomodoroTimer />
       )}
-      <Notes/>
+      <Notes />
     </div>
   );
 };

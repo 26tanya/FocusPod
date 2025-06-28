@@ -45,7 +45,7 @@ Logout
       <h2 className="text-xl font-semibold mb-4">🧘 Start a Solo Session</h2>
       <button
         className="bg-indigo-600 text-white px-6 py-2 rounded shadow"
-        onClick={() => navigate('/solo')}
+        onClick={() => navigate('/start-solo')}
       >
         Start Solo Timer
       </button>

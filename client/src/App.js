@@ -9,7 +9,7 @@ import VerifyOtpPage from './pages/VerifyOtpPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import CreateRoomPage from './pages/CreateRoomPage';
-
+import CreateSoloRoomPage from './pages/CreateSoloRoomPage';
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/" />;
@@ -24,6 +24,8 @@ function App() {
         <Route path="/verify-otp" element={<VerifyOtpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/create-room" element={<CreateRoomPage />} />
+        <Route path="/start-solo" element={<CreateSoloRoomPage />} />
+
         <Route
           path="/dashboard"
           element={
