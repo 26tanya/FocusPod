@@ -4,7 +4,7 @@ const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 require('dotenv').config();
-
+const SessionLog = require('./models/SessionLog');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
@@ -42,6 +42,8 @@ app.use('/api/auth', authRoutes);
 
 const roomRoutes = require('./routes/room');
 app.use('/api/rooms', roomRoutes);
+const progressRoutes = require('./routes/progress');
+app.use('/api/progress', progressRoutes);
 
 // ✅ Basic test route
 app.get('/', (req, res) => res.send('🎯 FocusPod API Running'));
@@ -153,6 +155,16 @@ io.on('connection', (socket) => {
       socket.emit('send-duration', roomDurations[roomCode]);
     }
   });
+  socket.on('log-session', async ({ userId, duration }) => {
+    try {
+      const newSession = new SessionLog({ userId, duration });
+      await newSession.save();
+      console.log(`✅ Session saved for user ${userId}`);
+    } catch (err) {
+      console.error('❌ Error saving session:', err);
+    }
+  });
+
 
   // ✅ Handle disconnect
   socket.on('disconnect', () => {

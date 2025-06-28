@@ -59,6 +59,21 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
                 setIsRunning(false);
                 new Audio('/sounds/timer-end.mp3').play();
                 alert('⏰ Time is up!');
+                
+                if (!isSolo && roomCode && user) {
+                  socket.emit('log-session', {
+                    userId: user._id,
+                    duration: initialTotal.current / 60, // e.g., 25 minutes
+                  });
+                }
+
+                if (isSolo && user) {
+                  socket.emit('log-session', {
+                    userId: user._id,
+                    duration: initialTotal.current / 60,
+                  });
+                }
+
                 return 0;
               }
               return m - 1;
@@ -138,7 +153,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
       </div>
 
       <div className="flex justify-center gap-4 mb-6">
-  {!isRunning ? (
+      {!isRunning ? (
         <button
           onClick={handleStart}
           disabled={!isCreator && !isSolo}
@@ -163,8 +178,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
       >
         Reset
       </button>
-</div>
-
+    </div>
     </div>
   );
 };

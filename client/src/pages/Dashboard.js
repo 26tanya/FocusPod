@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { nanoid } from 'nanoid';
-
+import ProgressSection from '../components/ProgressSection';
+import TestChart from '../components/TestChart';
 const Dashboard = () => {
 const { user, logout } = useAuth();
 const navigate = useNavigate();
@@ -33,6 +34,7 @@ return (
 <h1 className="text-3xl font-bold">Hello, {user.name} 👋</h1>
 <p className="text-gray-600">{user.email}</p>
 </div>
+
 <button className="bg-red-500 text-white px-4 py-2 rounded-lg shadow" onClick={logout} >
 Logout
 </button>
@@ -81,6 +83,7 @@ Logout
         </button>
       </div>
     </div>
+     <ProgressSection/>
   </div>
 </div>
 );
