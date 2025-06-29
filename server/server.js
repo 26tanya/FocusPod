@@ -39,7 +39,8 @@ app.use(passport.session());
 // ✅ Routes
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
-
+const aiRoutes = require('./routes/ai');
+app.use('/api/ai', aiRoutes);
 const roomRoutes = require('./routes/room');
 app.use('/api/rooms', roomRoutes);
 const progressRoutes = require('./routes/progress');

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useParams, useSearchParams } from 'react-router-dom';
 import Notes from '../components/Notes';
 import socket from '../socket';
+import AIAssistantPopup from '../components/AIAssistantPopup';
 
 const GroupRoom = () => {
   const { roomCode } = useParams();
@@ -34,6 +35,7 @@ const GroupRoom = () => {
           <FocusTimer roomCode={roomCode} initialDuration={durationFromURL} isCreator={isCreator} />
           <GroupChat roomCode={roomCode} user={user} />
           <Notes />
+          <AIAssistantPopup/>
         </>
       ) : (
         <p className="text-center text-gray-600">Invalid Room</p>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import socket from '../socket';
 import { useAuth } from '../context/AuthContext';
 import CircularProgress from './CircularProgress';
-
+import { toast } from 'react-toastify';
 const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator = false }) => {
   const { user } = useAuth();
 
@@ -55,8 +55,23 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
           if (prev === 0) {
             setMinutes((m) => {
               if (m === 0) {
-                new Audio('/sounds/timer-end.mp3').play();
-                alert('⏰ Time is up!');
+                const playAndToast = async () => {
+      try {
+        const audio = new Audio('/sounds/timer-end.mp3');
+        await audio.play(); // Ensure audio plays first
+        toast.info('🎉 Boom! Session over. Stretch, sip water, vibe ✨', {
+          position: 'top-left',
+          icon: '🕒',
+        });
+      } catch (err) {
+        console.error('Audio failed to play:', err);
+        toast.info('⏰ Time! (Audio failed)', {
+          icon: '🕒',
+        });
+      }
+    };
+
+    playAndToast();
                 setIsRunning(false);
                 clearInterval(timerRef.current);
                 console.log("⏳ Logging session for user:", user);
@@ -112,7 +127,10 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
         setMinutes(0);
         setSeconds(0);
         setIsRunning(false);
-        alert('⏰ Time is up!');
+        toast.info('⏰ Time is up! Great job!', {
+          position: 'top-left',
+          icon: '🕒',
+        });
       }
     });
 
@@ -153,7 +171,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
     <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto text-center mt-6">
       <h2 className="text-2xl font-semibold mb-2"> Focus Timer</h2>
 
-      {!isSolo && <p className="text-sm text-gray-500 mb-2">Room Code: {roomCode}</p>}
+      {!isSolo && <p className="text-sm text-gray-500 mb-2"> </p>}
 
       <CircularProgress percentage={progress} />
 
