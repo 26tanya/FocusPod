@@ -1,32 +1,34 @@
-// src/components/GoogleLoginButton.js
 import React from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../firebase/config';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+
 const GoogleLoginButton = () => {
-    const handleGoogleLogin = async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
+  const { login } = useAuth(); // ✅ Use your login method
 
-    const userData = {
-      name: user.displayName,
-      email: user.email
-    };
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-    // Send user data to backend
-    await axios.post('http://localhost:5000/api/auth/google-login', userData);
+      const userData = {
+        name: user.displayName,
+        email: user.email
+      };
 
-    // Save to localStorage
-    localStorage.setItem('user', JSON.stringify(userData));
+      // Send to backend and get response
+      const res = await axios.post('http://localhost:5000/api/auth/google-login', userData);
 
-    // Redirect to dashboard
-    window.location.href = '/dashboard';
-  } catch (error) {
-    console.error('Google login error:', error);
-  }
-};
-  
+      // ✅ Save _id and other info using login()
+      login(res.data.user);
+
+      // Redirect
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error('Google login error:', error);
+    }
+  };
 
   return (
     <button

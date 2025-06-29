@@ -24,7 +24,7 @@ navigate(`/room/${joinCode.trim()}`);
 //hello
 
 if (!user) return null;
-console.log("User from context:", user);
+console.log("User from context:", user._id);
 
 return (
   
@@ -83,7 +83,12 @@ Logout
         </button>
       </div>
     </div>
-     <ProgressSection/>
+     <button
+        onClick={() => navigate('/progress')}
+        className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700"
+      >
+        📈 Track Progress
+      </button>
   </div>
 </div>
 );

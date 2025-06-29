@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Session = require('../models/SessionLog');
 
+console.log('Progress routes loaded');
 // 🕒 Total time studied today + session count
 router.get('/today/:userId', async (req, res) => {
   const { userId } = req.params;

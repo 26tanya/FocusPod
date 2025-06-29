@@ -10,6 +10,9 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import CreateRoomPage from './pages/CreateRoomPage';
 import CreateSoloRoomPage from './pages/CreateSoloRoomPage';
+import ProgressPage from './pages/ProgressPage';
+
+
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/" />;
@@ -39,6 +42,14 @@ function App() {
           element={
             <ProtectedRoute>
               <GroupRoom />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <ProgressPage />
             </ProtectedRoute>
           }
         />

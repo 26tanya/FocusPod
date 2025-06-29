@@ -34,7 +34,7 @@ const CreateSoloRoomPage = () => {
             onChange={(e) => setDuration(parseInt(e.target.value))}
             className="border rounded px-3 py-1 w-full"
           >
-            <option value={15}>15 minutes</option>
+            <option value={1}>1 minutes</option>
             <option value={25}>25 minutes</option>
             <option value={30}>30 minutes</option>
             <option value={45}>45 minutes</option>

@@ -14,13 +14,22 @@ router.post('/google-login', async (req, res) => {
 
   try {
     let user = await User.findOne({ email });
-
+    
     if (!user) {
       user = new User({ name, email, fromGoogle: true });
       await user.save();
     }
+  console.log("🔍 Sending user object:", user);
+  res.status(200).json({
+  message: 'User logged in via Google',
+  user: {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    fromGoogle: user.fromGoogle
+  }
+});
 
-    res.status(200).json({ message: 'User logged in via Google', user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

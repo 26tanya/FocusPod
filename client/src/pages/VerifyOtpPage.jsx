@@ -22,7 +22,7 @@ const VerifyOtpPage = () => {
     });
     
     alert('✅ OTP Verified! Logging you in...');
-    login(res.data);  // Auto-login via context
+    login(res.data.user);  // Auto-login via context
     navigate('/dashboard');  // Redirect to dashboard
   } catch (err) {
     console.error(err);

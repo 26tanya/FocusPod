@@ -65,11 +65,12 @@ exports.login = async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email
       }
     });
+   
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).json({ message: 'Server error' });
@@ -102,11 +103,11 @@ exports.verifyOtp = async (req, res) => {
     await user.save();
 
     res.status(200).json({ message: 'Email verified successfully',
-      
+      user:{
       _id: user._id,
       name: user.name,
       email: user.email
-      
+      }
      });
   } catch (err) {
     console.error("OTP Verification Error:", err);

@@ -47,7 +47,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
     }
   }, [isCreator, roomCode]);
 
-  // ✅ Timer countdown
+  
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => {
@@ -55,24 +55,33 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
           if (prev === 0) {
             setMinutes((m) => {
               if (m === 0) {
-                clearInterval(timerRef.current);
-                setIsRunning(false);
                 new Audio('/sounds/timer-end.mp3').play();
                 alert('⏰ Time is up!');
-                
-                if (!isSolo && roomCode && user) {
-                  socket.emit('log-session', {
-                    userId: user._id,
-                    duration: initialTotal.current / 60, // e.g., 25 minutes
-                  });
-                }
+                setIsRunning(false);
+                clearInterval(timerRef.current);
+                console.log("⏳ Logging session for user:", user);
+                if (user && user._id) {
+                  
 
-                if (isSolo && user) {
                   socket.emit('log-session', {
                     userId: user._id,
                     duration: initialTotal.current / 60,
                   });
                 }
+                
+                // if (!isSolo && roomCode && user) {
+                //   socket.emit('log-session', {
+                //     userId: user._id,
+                //     duration: initialTotal.current / 60, // e.g., 25 minutes
+                //   });
+                // }
+
+                // if (isSolo && user) {
+                //   socket.emit('log-session', {
+                //     userId: user._id,
+                //     duration: initialTotal.current / 60,
+                //   });
+                // }
 
                 return 0;
               }
