@@ -7,6 +7,9 @@ import SessionGoals from '../components/SessionGoals';
 import backgroundImage from '../Photos/bg1.jpg';
 import AIAssistantPopup from '../components/AIAssistantPopup';
 import { useAuth } from '../context/AuthContext';
+import SoothingMusicPlayer from '../components/SoothingMusicPlayer';
+import axios from 'axios';
+import { toast } from 'sonner';
 
 const SoloRoom = () => {
   const [searchParams] = useSearchParams();
@@ -21,19 +24,39 @@ const SoloRoom = () => {
   // ✅ Auto-generate roomCode if not present in URL
   useEffect(() => {
     if (!roomCode && user?._id) {
-      const newRoomCode = Math.random().toString(36).substr(2, 8);
+      const newRoomCode = Math.random().toString(36).substring(2, 8);
       searchParams.set('roomCode', newRoomCode);
       navigate(`/solo?${searchParams.toString()}`, { replace: true });
     }
   }, [roomCode, user, searchParams, navigate]);
 
-  // ✅ Generate session ID once roomCode is ready
+  // ✅ Generate session ID + Save Room
   useEffect(() => {
-    if (user?._id && roomCode) {
-      const id = `solo-${user._id}-${roomCode}`;
-      setSessionId(id);
-    }
-  }, [user, roomCode]);
+    const saveRoomToDB = async () => {
+      if (user?._id && roomCode) {
+        setSessionId(`solo-${user._id}-${roomCode}`);
+
+        try {
+          await axios.post('http://localhost:5000/api/rooms/create', {
+            code: roomCode,
+            creator: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+            },
+            mode,
+            customDuration: mode === 'custom' ? duration : undefined,
+          });
+          console.log('✅ Room saved successfully');
+        } catch (err) {
+          console.error('❌ Error saving room:', err.response?.data || err.message);
+          
+        }
+      }
+    };
+
+    saveRoomToDB();
+  }, [user, roomCode, mode, duration]);
 
   if (!sessionId) return null;
 
@@ -49,16 +72,15 @@ const SoloRoom = () => {
     >
       <SessionGoals />
 
-      <div className="backdrop-blur-sm bg-white/60 rounded-2xl p-8 shadow-xl w-full max-w-xl mx-auto flex justify-center items-center min-h-[280px] transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
-        {mode === 'custom' ? (
-          <FocusTimer isSolo initialDuration={duration} large />
-        ) : (
-          <PomodoroTimer />
-        )}
-      </div>
+      {mode === 'custom' ? (
+        <FocusTimer isSolo initialDuration={duration} large />
+      ) : (
+        <PomodoroTimer />
+      )}
 
       <Notes sessionId={sessionId} onClose={() => {}} />
       <AIAssistantPopup sessionId={sessionId} onClose={() => {}} />
+      <SoothingMusicPlayer />
     </div>
   );
 };

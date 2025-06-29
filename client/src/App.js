@@ -11,9 +11,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import CreateRoomPage from './pages/CreateRoomPage';
 import CreateSoloRoomPage from './pages/CreateSoloRoomPage';
 import ProgressPage from './pages/ProgressPage';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import { Toaster } from 'sonner';
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/" />;
@@ -22,17 +20,7 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <BrowserRouter>
-    <ToastContainer 
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored" // You can change to "light" or "dark"
-      />
+    <Toaster richColors position="top-center" />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />

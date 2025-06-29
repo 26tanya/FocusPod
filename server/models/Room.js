@@ -10,7 +10,7 @@ const roomSchema = new mongoose.Schema({
   mode: {
     type: String,
     enum: ['pomodoro', 'custom'],
-    default: 'pomodoro',
+    default: 'custom',
   },
   customDuration: {
     type: Number, // in minutes

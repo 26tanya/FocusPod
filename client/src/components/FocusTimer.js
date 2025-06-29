@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import socket from '../socket';
 import { useAuth } from '../context/AuthContext';
 import CircularProgress from './CircularProgress';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
+
 const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator = false }) => {
   const { user } = useAuth();
 
@@ -15,24 +16,21 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
   const totalSeconds = minutes * 60 + seconds;
   const progress = 100 - (totalSeconds / initialTotal.current) * 100;
 
-  // ✅ Emit duration if creator
+  // Sync duration
   useEffect(() => {
     if (!isSolo && isCreator && roomCode) {
       socket.emit('set-duration', { roomCode, duration: initialDuration });
     }
   }, [roomCode, initialDuration, isCreator, isSolo]);
 
-  // ✅ Sync duration for non-creators
   useEffect(() => {
     if (!isSolo && !isCreator) {
       socket.on('set-duration', (duration) => {
         setMinutes(duration);
         setSeconds(0);
         initialTotal.current = duration * 60;
-        console.log('⏱️ Synced timer with duration:', duration);
       });
 
-      // Ask server in case missed initial emit
       socket.emit('get-duration', roomCode);
       socket.on('send-duration', (duration) => {
         setMinutes(duration);
@@ -47,7 +45,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
     }
   }, [isCreator, roomCode]);
 
-  
+  // Timer logic
   useEffect(() => {
     if (isRunning) {
       timerRef.current = setInterval(() => {
@@ -56,48 +54,28 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
             setMinutes((m) => {
               if (m === 0) {
                 const playAndToast = async () => {
-      try {
-        const audio = new Audio('/sounds/timer-end.mp3');
-        await audio.play(); // Ensure audio plays first
-        toast.info('🎉 Boom! Session over. Stretch, sip water, vibe ✨', {
-          position: 'top-left',
-          icon: '🕒',
-        });
-      } catch (err) {
-        console.error('Audio failed to play:', err);
-        toast.info('⏰ Time! (Audio failed)', {
-          icon: '🕒',
-        });
-      }
-    };
-
-    playAndToast();
+                  try {
+                    const audio = new Audio('/sounds/timer-end.mp3');
+                    await audio.play();
+                    toast.success('🎉 Session complete! Great job.', {
+                      position: 'top-left',
+                    });
+                  } catch (err) {
+                    toast.warning('⏰ Time is up! (Audio failed)', {
+                      position: 'top-left',
+                    });
+                  }
+                };
+                playAndToast();
                 setIsRunning(false);
                 clearInterval(timerRef.current);
-                console.log("⏳ Logging session for user:", user);
-                if (user && user._id) {
-                  
 
+                if (user && user._id) {
                   socket.emit('log-session', {
                     userId: user._id,
                     duration: initialTotal.current / 60,
                   });
                 }
-                
-                // if (!isSolo && roomCode && user) {
-                //   socket.emit('log-session', {
-                //     userId: user._id,
-                //     duration: initialTotal.current / 60, // e.g., 25 minutes
-                //   });
-                // }
-
-                // if (isSolo && user) {
-                //   socket.emit('log-session', {
-                //     userId: user._id,
-                //     duration: initialTotal.current / 60,
-                //   });
-                // }
-
                 return 0;
               }
               return m - 1;
@@ -111,13 +89,12 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
     return () => clearInterval(timerRef.current);
   }, [isRunning]);
 
-  // ✅ Socket timer events
+  // Timer control via socket
   useEffect(() => {
     socket.on('start-timer', ({ startTime }) => {
       const now = Date.now();
       const elapsed = Math.floor((now - startTime) / 1000);
-      const duration = initialTotal.current;
-      const remaining = duration - elapsed;
+      const remaining = initialTotal.current - elapsed;
 
       if (remaining > 0) {
         setMinutes(Math.floor(remaining / 60));
@@ -127,9 +104,8 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
         setMinutes(0);
         setSeconds(0);
         setIsRunning(false);
-        toast.info('⏰ Time is up! Great job!', {
+        toast.error('⏰ Time is up!', {
           position: 'top-left',
-          icon: '🕒',
         });
       }
     });
@@ -168,44 +144,40 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto text-center mt-6">
-      <h2 className="text-2xl font-semibold mb-2"> Focus Timer</h2>
-
-      {!isSolo && <p className="text-sm text-gray-500 mb-2"> </p>}
-
+    <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl p-6 w-full max-w-md mx-auto text-center mt-6 border border-blue-200 transition-all hover:scale-[1.01]">
       <CircularProgress percentage={progress} />
 
-      <div className="text-6xl font-mono mb-6">
+      <div className="text-[5.5rem] font-extrabold font-mono tracking-wide text-gray-900 mt-4 mb-6 drop-shadow-sm">
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </div>
 
-      <div className="flex justify-center gap-4 mb-6">
-      {!isRunning ? (
-        <button
-          onClick={handleStart}
-          disabled={!isCreator && !isSolo}
-          className="px-4 py-2 rounded-xl shadow text-white bg-green-500 hover:bg-green-600 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          Start
-        </button>
-      ) : (
-        <button
-          onClick={handlePause}
-          disabled={!isCreator && !isSolo}
-          className="px-4 py-2 rounded-xl shadow text-white bg-yellow-500 hover:bg-yellow-600 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          Pause
-        </button>
-      )}
+      <div className="flex justify-center gap-4">
+        {!isRunning ? (
+          <button
+            onClick={handleStart}
+            disabled={!isCreator && !isSolo}
+            className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all shadow-md disabled:opacity-50"
+          >
+            Start
+          </button>
+        ) : (
+          <button
+            onClick={handlePause}
+            disabled={!isCreator && !isSolo}
+            className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 transition-all shadow-md disabled:opacity-50"
+          >
+            Pause
+          </button>
+        )}
 
-      <button
-        onClick={handleReset}
-        disabled={!isCreator && !isSolo}
-        className="px-4 py-2 rounded-xl shadow text-white bg-red-500 hover:bg-red-600 transition duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        Reset
-      </button>
-    </div>
+        <button
+          onClick={handleReset}
+          disabled={!isCreator && !isSolo}
+          className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all shadow-md disabled:opacity-50"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 };
