@@ -1,62 +1,70 @@
-import React, { useState, useEffect } from 'react';
-import { FiDownload, FiTrash2 } from 'react-icons/fi';
+import React, { useState, useEffect, useRef } from 'react';
+import { FiDownload, FiTrash2, FiX } from 'react-icons/fi';
 
-const Notes = () => {
+const Notes = ({ sessionId, onClose }) => {
   const [notes, setNotes] = useState('');
+  const hasLoaded = useRef(false); // ✅ prevent overwriting on first render
 
   useEffect(() => {
-    const saved = localStorage.getItem('focus-notes');
+    const saved = localStorage.getItem(`focus-notes-${sessionId}`);
     if (saved) setNotes(saved);
-  }, []);
+    hasLoaded.current = true;
+  }, [sessionId]);
 
   useEffect(() => {
-    localStorage.setItem('focus-notes', notes);
-  }, [notes]);
+    if (hasLoaded.current) {
+      localStorage.setItem(`focus-notes-${sessionId}`, notes);
+    }
+  }, [notes, sessionId]);
 
   const handleDownload = () => {
     const blob = new Blob([notes], { type: 'text/plain' });
     const link = document.createElement('a');
-    link.download = `focus-notes-${Date.now()}.txt`;
+    link.download = `focus-notes-${sessionId}.txt`;
     link.href = URL.createObjectURL(blob);
     link.click();
   };
 
   const handleClear = () => {
-    if (window.confirm('Are you sure you want to clear your notes?')) {
+    if (window.confirm('Clear all notes for this session?')) {
       setNotes('');
-      localStorage.removeItem('focus-notes');
+      localStorage.removeItem(`focus-notes-${sessionId}`);
     }
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl p-6 border border-blue-100 w-[450px] h-[500px] mx-auto mt-10 flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-800">📝 Notes</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg shadow text-sm"
-          >
-            <FiDownload />
-            Download
-          </button>
-          <button
-            onClick={handleClear}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg shadow text-sm"
-          >
-            <FiTrash2 />
-            Clear
-          </button>
-        </div>
+    <div className="fixed top-3 left-6 z-20 bg-white w-[400px] h-[480px] rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden">
+      <div className="flex justify-between items-center px-4 py-3 border-b bg-blue-50">
+        <h2 className="text-lg font-semibold text-gray-800">📝 Notes</h2>
+        <button onClick={onClose} className="text-gray-500 hover:text-red-500">
+          <FiX size={20} />
+        </button>
       </div>
 
-      <div className="relative flex-grow">
+      <div className="flex-grow px-4 py-3">
         <textarea
-          className="w-full h-full border-2 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 bg-white rounded-xl p-3 text-gray-700 font-medium resize-none overflow-y-auto"
+          className="w-full h-full border border-blue-200 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
           placeholder="Write your notes here..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
+      </div>
+
+      <div className="flex justify-between items-center px-4 py-3 border-t bg-blue-50">
+        <button
+          onClick={handleClear}
+          className="flex items-center gap-1 text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md"
+        >
+          <FiTrash2 size={14} />
+          Clear
+        </button>
+        <button
+          onClick={handleDownload}
+          className="flex items-center gap-1 text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md"
+        >
+          <FiDownload size={14} />
+          Download
+        </button>
       </div>
     </div>
   );

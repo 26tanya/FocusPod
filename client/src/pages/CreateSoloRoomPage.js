@@ -7,7 +7,8 @@ const CreateSoloRoomPage = () => {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate(`/solo?mode=${mode}&duration=${duration}`);
+    const code = Math.random().toString(36).substr(2, 8);
+    navigate(`/solo?mode=${mode}&duration=${duration}&roomCode=${code}`);
   };
 
   return (

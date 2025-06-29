@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import socket from '../socket';
+import SessionGoals from './SessionGoals';
 
 const GroupChat = ({ roomCode, user }) => {
   const [message, setMessage] = useState('');
@@ -114,7 +115,7 @@ const GroupChat = ({ roomCode, user }) => {
           👥 <strong>Members:</strong> {members.map((m) => m.name).join(', ')}
         </div>
       )}
-
+      <SessionGoals/>
       {/* Chat Log */}
       <div className="h-60 overflow-y-auto border p-2 rounded mb-1 bg-gray-50 flex flex-col gap-1">
         {chatLog.map((msg, idx) => {

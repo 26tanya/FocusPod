@@ -1,5 +1,5 @@
-// components/SessionGoals.js
 import React, { useState } from 'react';
+import { FiCheck, FiTrash, FiPlus } from 'react-icons/fi';
 
 const SessionGoals = () => {
   const [goals, setGoals] = useState([]);
@@ -25,46 +25,51 @@ const SessionGoals = () => {
   };
 
   return (
-    <div className="bg-gray-100 rounded-xl p-4 mt-6 shadow-md">
-      <h3 className="text-xl font-semibold mb-3">🎯 Goal of the Session</h3>
+    <div className="fixed top-6 right-6 w-[350px] bg-white/70 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-blue-100 z-20">
+      <h3 className="text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
+        🎯 Goal of the Session
+      </h3>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-3">
         <input
           type="text"
-          className="flex-1 border p-2 rounded"
+          className="flex-1 p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
           placeholder="Enter a goal..."
           value={newGoal}
           onChange={(e) => setNewGoal(e.target.value)}
         />
         <button
           onClick={handleAddGoal}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 rounded-md flex items-center justify-center"
+          title="Add Goal"
         >
-          Add
+          <FiPlus />
         </button>
       </div>
 
-      <ul className="space-y-2">
+      <ul className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
         {goals.map((goal, index) => (
           <li
             key={index}
-            className={`flex justify-between items-center p-2 rounded ${
-              goal.done ? 'bg-green-100 line-through' : 'bg-white'
+            className={`flex justify-between items-center px-3 py-2 rounded-lg transition-all duration-200 ${
+              goal.done ? 'bg-green-100 text-gray-700 line-through' : 'bg-white text-gray-800'
             }`}
           >
-            <span>{goal.text}</span>
-            <div className="space-x-2">
+            <span className="flex-1 truncate">{goal.text}</span>
+            <div className="flex gap-2 items-center ml-2">
               <button
                 onClick={() => toggleGoal(index)}
-                className="text-sm text-green-600 hover:underline"
+                className="text-green-600 hover:text-green-800"
+                title={goal.done ? 'Undo' : 'Mark Done'}
               >
-                {goal.done ? 'Undo' : 'Done'}
+                <FiCheck />
               </button>
               <button
                 onClick={() => removeGoal(index)}
-                className="text-sm text-red-600 hover:underline"
+                className="text-red-500 hover:text-red-700"
+                title="Delete"
               >
-                Delete
+                <FiTrash />
               </button>
             </div>
           </li>

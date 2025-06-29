@@ -12,7 +12,7 @@ const GroupRoom = () => {
   const [joined, setJoined] = useState(false);
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-
+  const sessionId = `group-${roomCode}`; 
   const durationFromURL = parseInt(searchParams.get('duration')) || 25; // default 25
   const isCreator = searchParams.get('creator') === 'true';
 
@@ -28,14 +28,15 @@ const GroupRoom = () => {
   }, [roomCode, durationFromURL, isCreator]);
 
   return (
+    
     <div className="p-6">
       {joined ? (
         <>
           <h2 className="text-center text-lg font-bold mb-2">Room Code: {roomCode}</h2>
           <FocusTimer roomCode={roomCode} initialDuration={durationFromURL} isCreator={isCreator} />
           <GroupChat roomCode={roomCode} user={user} />
-          <Notes />
-          <AIAssistantPopup/>
+          <Notes sessionId={sessionId} onClose={() => {}} />
+          <AIAssistantPopup sessionId={sessionId} onClose={() => {}} />
         </>
       ) : (
         <p className="text-center text-gray-600">Invalid Room</p>

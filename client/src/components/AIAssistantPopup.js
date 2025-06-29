@@ -1,27 +1,28 @@
-// src/components/AIAssistantPopup.jsx
 import { useState, useEffect, useRef } from 'react';
 import { FaRobot, FaPaperPlane } from 'react-icons/fa';
 import { IoClose } from 'react-icons/io5';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 
-const AIAssistantPopup = () => {
+const AIAssistantPopup = ({ sessionId }) => {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const responseRef = useRef(null);
 
-  // Load saved messages from localStorage
+  // ✅ Load messages for this specific session
   useEffect(() => {
-    const saved = localStorage.getItem("focuspod-ai-messages");
+    if (!sessionId) return;
+    const saved = sessionStorage.getItem(`focus-ai-${sessionId}`);
     if (saved) setMessages(JSON.parse(saved));
-  }, []);
+  }, [sessionId]);
 
-  // Save messages to localStorage on every update
+  // ✅ Save messages to sessionStorage for this session
   useEffect(() => {
-    localStorage.setItem("focuspod-ai-messages", JSON.stringify(messages));
-  }, [messages]);
+    if (!sessionId) return;
+    sessionStorage.setItem(`focus-ai-${sessionId}`, JSON.stringify(messages));
+  }, [messages, sessionId]);
 
   const handleAsk = async () => {
     if (!question.trim()) return;
@@ -30,9 +31,13 @@ const AIAssistantPopup = () => {
     setQuestion('');
     setLoading(true);
     try {
-      const { data } = await axios.post('http://localhost:5000/api/ai/ask', { prompt: newMessage.content });
+      const { data } = await axios.post('http://localhost:5000/api/ai/ask', {
+        prompt: newMessage.content,
+      });
+
       const reply = { role: 'assistant', content: '' };
       setMessages((prev) => [...prev, reply]);
+
       for (let i = 0; i < data.reply.length; i++) {
         setMessages((prev) => {
           const updated = [...prev];
@@ -42,7 +47,10 @@ const AIAssistantPopup = () => {
         await new Promise((res) => setTimeout(res, 15));
       }
     } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ AI failed to respond.' }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: '⚠️ AI failed to respond.' },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -119,17 +127,13 @@ const AIAssistantPopup = () => {
             disabled={loading || !question.trim()}
             className="mt-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded flex items-center justify-center"
           >
-            {loading ? "Thinking..." : (
-              <>
-                Ask <FaPaperPlane className="ml-2" />
-              </>
-            )}
+            {loading ? 'Thinking...' : <>Ask <FaPaperPlane className="ml-2" /></>}
           </button>
 
           <button
             onClick={() => {
               setMessages([]);
-              localStorage.removeItem("focuspod-ai-messages");
+              sessionStorage.removeItem(`focus-ai-${sessionId}`);
             }}
             className="text-xs text-gray-400 underline hover:text-red-600 mt-2"
           >
