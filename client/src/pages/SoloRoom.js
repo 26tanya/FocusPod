@@ -36,9 +36,9 @@ const SoloRoom = () => {
       </div>
 
       {/* Notes (Bottom) */}
-      <div className="backdrop-blur-sm bg-white/60 rounded-2xl p-6 shadow-xl w-full max-w-3xl mx-auto transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]">
+      
         <Notes />
-      </div>
+      
     </div>
   );
 };
