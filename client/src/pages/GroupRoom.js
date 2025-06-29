@@ -7,6 +7,12 @@ import Notes from '../components/Notes';
 import socket from '../socket';
 import AIAssistantPopup from '../components/AIAssistantPopup';
 import axios from 'axios';
+import SoothingMusicPlayer from '../components/SoothingMusicPlayer';
+import RoomCopyBar from '../components/RoomCopyBar';
+import roomImage from '../Photos/room.jpg'; // adjust path as needed
+import { FaComments } from 'react-icons/fa'; // floating icon
+import { IoClose } from 'react-icons/io5'; 
+import SessionGoals from '../components/SessionGoals';
 const GroupRoom = () => {
   const { roomCode } = useParams();
   const [joined, setJoined] = useState(false);
@@ -49,21 +55,27 @@ const GroupRoom = () => {
     }
   }, [roomCode, durationFromURL, isCreator, user, mode]);
   return (
-    
+    <div
+      className="min-h-screen bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${roomImage})` }}
+    >
     <div className="p-6">
       {joined ? (
         <>
-          <h2 className="text-center text-lg font-bold mb-2">Room Code: {roomCode}</h2>
+          <SessionGoals/>
+          <RoomCopyBar roomCode={roomCode} creatorName={user?.name} />
           <FocusTimer roomCode={roomCode} initialDuration={durationFromURL} isCreator={isCreator} />
           <GroupChat roomCode={roomCode} user={user} />
           <Notes sessionId={sessionId} onClose={() => {}} />
           <AIAssistantPopup sessionId={sessionId} onClose={() => {}} />
+          <SoothingMusicPlayer/>
         </>
       ) : (
         <p className="text-center text-gray-600">Invalid Room</p>
       )}
     </div>
+    </div>
   );
 };
 
-export default GroupRoom;
+export default GroupRoom;  
