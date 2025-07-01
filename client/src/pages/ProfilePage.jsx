@@ -7,101 +7,140 @@ const ProfilePage = () => {
   const [name, setName] = useState(user?.name || '');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [tab, setTab] = useState('profile');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setLoading(true);
+    setMessage({});
     try {
-      const res = await axios.put(`http://localhost:5000/api/auth/profile/${user._id}`, {
-        name,
-      });
-      login(res.data.user); // update context
-      setSuccess('✅ Profile updated successfully!');
+      const res = await axios.put(`http://localhost:5000/api/auth/profile/${user._id}`, { name });
+      login(res.data.user);
+      setMessage({ type: 'success', text: '✅ Profile updated!' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Update failed');
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Update failed' });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setLoading(true);
+    setMessage({});
     try {
-      await axios.put(`http://localhost:5000/api/auth/change-password`, {
+      await axios.post(`http://localhost:5000/api/auth/change-password`, {
         userId: user._id,
         currentPassword,
         newPassword,
       });
-      setSuccess('🔒 Password changed successfully!');
+      setMessage({ type: 'success', text: '🔒 Password changed successfully!' });
       setCurrentPassword('');
       setNewPassword('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Password change failed');
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Password change failed' });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white p-6 rounded-2xl shadow-xl max-w-lg w-full">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">👤 Your Profile</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-indigo-100 px-4 py-8">
+      <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-xl">
+        <h2 className="text-3xl font-bold text-center mb-6 text-purple-700">Profile Settings</h2>
 
-        {success && <p className="text-green-600 text-sm mb-3 text-center">{success}</p>}
-        {error && <p className="text-red-500 text-sm mb-3 text-center">{error}</p>}
-
-        {/* Update Name */}
-        <form onSubmit={handleUpdateProfile} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border p-2 rounded"
-            />
-          </div>
+        {/* Tabs */}
+        <div className="flex justify-center space-x-4 mb-6">
           <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded shadow"
+            onClick={() => setTab('profile')}
+            className={`px-4 py-2 rounded-full transition ${
+              tab === 'profile'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
           >
-            Update Name
+            Profile Info
           </button>
-        </form>
-
-        {/* Divider */}
-        <hr className="my-6 border-t" />
-
-        {/* Change Password */}
-        <form onSubmit={handleChangePassword} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full border p-2 rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border p-2 rounded"
-              required
-            />
-          </div>
           <button
-            type="submit"
-            className="w-full bg-purple-600 text-white py-2 rounded shadow"
+            onClick={() => setTab('password')}
+            className={`px-4 py-2 rounded-full transition ${
+              tab === 'password'
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
           >
             Change Password
           </button>
-        </form>
+        </div>
+
+        {/* Alerts */}
+        {message.text && (
+          <div
+            className={`p-3 mb-4 rounded ${
+              message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        {/* Profile Update */}
+        {tab === 'profile' && (
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 transition text-white py-2 rounded shadow disabled:opacity-60"
+              disabled={loading}
+            >
+              {loading ? 'Updating...' : 'Update Profile'}
+            </button>
+          </form>
+        )}
+
+        {/* Password Change */}
+        {tab === 'password' && (
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-purple-400"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 transition text-white py-2 rounded shadow disabled:opacity-60"
+              disabled={loading}
+            >
+              {loading ? 'Changing...' : 'Change Password'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
