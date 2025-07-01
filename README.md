@@ -70,7 +70,7 @@ git clone https://github.com/26tanya/FocusPod.git
 cd FocusPod
 ```
 
-###Backend Setup
+### Backend Setup
 ```bash
 cd server
 npm install
@@ -80,16 +80,15 @@ npm install
 # EMAIL_USER=your_email
 # EMAIL_PASS=your_email_password
 # OPENROUTER_API_KEY=your_key
-
-npm start
+npm run dev
 ```
 
 
-###Frontend Setup
+### Frontend Setup
 ```bash
 cd client
 npm install
-npm run dev
+npm start
 ```
 
 ###📌 Project Structure
@@ -100,7 +99,7 @@ FocusPod/
 ├── README.md
 ```
 
-###📅 **Upcoming Features**
+### 📅 **Upcoming Features**
 Productivity badges & leaderboards
 
 Distraction blocker browser extension
@@ -109,9 +108,9 @@ Session history & export
 
 Calendar-based analytics
 
-###🙌 **Contributions**
+### 🙌 **Contributions**:
 Contributions are welcome! Feel free to fork this repo and submit a pull request.
 
-###📄 **License**
+### 📄 **License**:
 This project is open source and available under the MIT License.
 
