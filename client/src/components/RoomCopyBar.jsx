@@ -36,8 +36,8 @@ const RoomCopyBar = ({ roomCode, creatorName }) => {
 
       {/* Creator Info */}
       {creatorName && (
-        <p className="text-sm mt-3 text-gray-700">
-        <span className="font-semibold text-gray-800">Room Creator:</span> {creatorName}
+        <p className="text-l mt-3 text-white">
+        <span className="font-semibold text-white text">Room Creator:</span> {creatorName}
         </p>
       )}
     </div>

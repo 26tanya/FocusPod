@@ -33,7 +33,7 @@ const Notes = ({ sessionId, onClose }) => {
   };
 
   return (
-    <div className="fixed top-3 left-6 z-20 bg-white w-[400px] h-[480px] rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden">
+    <div className="z-20 bg-white w-[400px] h-[480px] rounded-2xl shadow-2xl border border-blue-200 flex flex-col overflow-hidden">
       <div className="flex justify-between items-center px-4 py-3 border-b bg-blue-50">
         <h2 className="text-lg font-semibold text-gray-800">📝 Notes</h2>
         <button onClick={onClose} className="text-gray-500 hover:text-red-500">

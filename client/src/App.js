@@ -12,6 +12,7 @@ import CreateRoomPage from './pages/CreateRoomPage';
 import CreateSoloRoomPage from './pages/CreateSoloRoomPage';
 import ProgressPage from './pages/ProgressPage';
 import { Toaster } from 'sonner';
+import AboutHelp from './pages/AboutHelp'; // adjust the path as needed
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -43,6 +44,7 @@ function App() {
           <Route path="/room/:roomCode" element={<GroupRoom />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/solo" element={<SoloRoom />} />
+          <Route path="/about" element={<AboutHelp />} />
         </Routes>
       </ProtectedRoute>
     </BrowserRouter>

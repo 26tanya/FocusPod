@@ -1,96 +1,104 @@
-// src/pages/Dashboard.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { nanoid } from 'nanoid';
-import ProgressSection from '../components/ProgressSection';
-import TestChart from '../components/TestChart';
+import Navbar from '../components/Navbar';
+import StudyCalendar from '../components/StudyCalendar';
 const Dashboard = () => {
-const { user, logout } = useAuth();
-const navigate = useNavigate();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [joinCode, setJoinCode] = useState('');
 
-const [joinCode, setJoinCode] = useState('');
+  const handleCreateRoom = () => {
+    const roomCode = nanoid(6);
+    navigate(`/create-room`);
+  };
 
-const handleCreateRoom = () => {
-const roomCode = nanoid(6); // generate 6-character room ID
-navigate(`/create-room`);
-};
+  const handleJoinRoom = () => {
+    if (joinCode.trim()) {
+      navigate(`/room/${joinCode.trim()}`);
+    }
+  };
 
-const handleJoinRoom = () => {
-if (joinCode.trim()) {
-navigate(`/room/${joinCode.trim()}`);
-}
-};
-//hello
+  if (!user) return null;
 
-if (!user) return null;
-console.log("User from context:", user._id);
+  return (
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-[#f8cdda] via-[#e2c0f9] to-[#fceabb]">
+      <Navbar />
+      <div className="px-6 max-w-4xl mx-auto">
 
-return (
-  
-<div className="min-h-screen bg-gray-100 p-6">
-<div className="flex justify-between items-center mb-6">
-<div>
-<h1 className="text-3xl font-bold">Hello, {user.name} 👋</h1>
-<p className="text-gray-600">{user.email}</p>
-</div>
+        <div className="grid sm:grid-cols-2 gap-6 mt-6">
+          {/* Solo Session */}
+          <div className="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Start a Solo Session</h2>
+            <button
+              onClick={() => navigate('/start-solo')}
+              className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
+            >
+              Start Solo Timer
+            </button>
+          </div>
 
-<button className="bg-red-500 text-white px-4 py-2 rounded-lg shadow" onClick={logout} >
-Logout
-</button>
-</div>
+          {/* Create Room */}
+          <div className="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Create a Group Room</h2>
+            <button
+              onClick={handleCreateRoom}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+            >
+              Create Room
+            </button>
+          </div>
 
+          {/* Join Room */}
+          <div className="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition col-span-2 text-center">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Join a Room</h2>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="Enter Room Code"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value)}
+                className="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              />
+              <button
+                onClick={handleJoinRoom}
+                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+              >
+                Join
+              </button>
+            </div>
+          </div>
 
-  <div className="grid gap-6 max-w-md mx-auto">
-    {/* 🧘 Solo Session */}
-    <div className="bg-white p-6 rounded-xl shadow-xl text-center">
-      <h2 className="text-xl font-semibold mb-4">🧘 Start a Solo Session</h2>
-      <button
-        className="bg-indigo-600 text-white px-6 py-2 rounded shadow"
-        onClick={() => navigate('/start-solo')}
-      >
-        Start Solo Timer
-      </button>
-    </div>
+          {/* Track Progress */}
+          <div className="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Track Progress</h2>
+            <button
+              onClick={() => navigate('/progress')}
+              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 transition"
+            >
+              View Progress
+            </button>
+          </div>
 
-    {/* 👥 Create Room */}
-    <div className="bg-white p-6 rounded-xl shadow-xl text-center">
-      <h2 className="text-xl font-semibold mb-4">👥 Create a Group Room</h2>
-      <button
-        className="bg-green-600 text-white px-6 py-2 rounded shadow"
-        onClick={handleCreateRoom}
-      >
-        Create Room
-      </button>
-    </div>
-
-    {/* 🔑 Join Room */}
-    <div className="bg-white p-6 rounded-xl shadow-xl text-center">
-      <h2 className="text-xl font-semibold mb-4">🔑 Join a Room</h2>
-      <div className="flex gap-2 mb-2">
-        <input
-          type="text"
-          placeholder="Enter Room Code"
-          value={joinCode}
-          onChange={(e) => setJoinCode(e.target.value)}
-          className="border rounded p-2 flex-1"
-        />
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={handleJoinRoom}
-        >
-          Join
-        </button>
+          {/* About */}
+          <div className="bg-white/90 p-6 rounded-xl shadow-md hover:shadow-lg transition text-center">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">About / Help</h2>
+            <button
+              onClick={() => navigate('/about')}
+              className="w-full bg-pink-500 text-white py-2 rounded hover:bg-pink-600 transition"
+            >
+              Learn More
+            </button>
+            
+          </div>
+        </div>
+         <div className="flex justify-center mb-10">
+            <StudyCalendar />
+          </div>
       </div>
     </div>
-     <button
-        onClick={() => navigate('/progress')}
-        className="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700"
-      >
-        📈 Track Progress
-      </button>
-  </div>
-</div>
-);
+  );
 };
-export default Dashboard
+
+export default Dashboard;

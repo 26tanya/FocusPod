@@ -25,7 +25,7 @@ const SessionGoals = () => {
   };
 
   return (
-    <div className="fixed top-6 right-6 w-[350px] bg-white/70 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-blue-100 z-20">
+    <div className=" w-[350px] bg-white/70 backdrop-blur-md shadow-xl rounded-2xl p-4 border border-blue-100 z-20">
       <h3 className="text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
         🎯 Goal of the Session
       </h3>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import socket from '../socket';
-
+import { IoClose } from 'react-icons/io5';
+import { FaComments } from 'react-icons/fa';
 
 const GroupChat = ({ roomCode, user }) => {
   const [message, setMessage] = useState('');
@@ -8,6 +9,8 @@ const GroupChat = ({ roomCode, user }) => {
   const [typingUsers, setTypingUsers] = useState([]);
   const [members, setMembers] = useState([]);
   const typingTimeoutRef = useRef(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (roomCode) {
@@ -27,6 +30,11 @@ const GroupChat = ({ roomCode, user }) => {
       setChatLog((prev) => {
         const updated = [...prev, data];
         localStorage.setItem(`chat-${roomCode}`, JSON.stringify(updated));
+
+        if (!isChatOpen) {
+          setUnreadCount((count) => count + 1);
+        }
+
         return updated;
       });
     };
@@ -57,7 +65,13 @@ const GroupChat = ({ roomCode, user }) => {
       socket.off('typing', handleTyping);
       socket.off('room-users', handleRoomUsers);
     };
-  }, [roomCode, user]);
+  }, [roomCode, user, isChatOpen]);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      setUnreadCount(0);
+    }
+  }, [isChatOpen]);
 
   const sendMessage = () => {
     if (message.trim()) {
@@ -99,73 +113,117 @@ const GroupChat = ({ roomCode, user }) => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-4 bg-white p-4 rounded-2xl shadow">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-xl font-semibold">💬 Group Chat</h3>
-        <button
-          onClick={clearChat}
-          className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-        >
-          Clear Chat
-        </button>
-      </div>
+    <>
+      {/* Floating Chat Icon */}
+      {/* Floating Chat Button in Fixed Position */}
+<div
+  style={{
+    position: 'fixed',
+    top: '2rem',
+    right: '1.5rem',
+    zIndex: 9999,
+  }}
+>
+  <div style={{ position: 'relative', width: '56px', height: '56px' }}>
+    <button
+      onClick={() => setIsChatOpen(true)}
+      className="w-full h-full bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg"
+      title="Open Group Chat"
+    >
+      <FaComments size={24} />
+    </button>
 
-      {members.length > 0 && (
-        <div className="text-sm text-gray-700 mb-2">
-          👥 <strong>Members:</strong> {members.map((m) => m.name).join(', ')}
+    {/* Unread badge */}
+    {unreadCount > 0 && !isChatOpen && (
+      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none shadow pointer-events-none">
+        {unreadCount > 9 ? '9+' : unreadCount}
+      </span>
+    )}
+  </div>
+</div>
+
+
+
+      {/* Sliding Chat Panel */}
+      <div
+        className={`fixed top-[7rem] right-0 w-[22rem] h-[32rem] bg-gradient-to-br from-[#f5f7fa] to-[#e4ecf3] z-40 transition-transform duration-300 ease-in-out border border-gray-300 rounded-l-2xl shadow-2xl ${
+          isChatOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex justify-between items-center p-4 bg-blue-600 text-white rounded-t-2xl">
+          <h2 className="text-lg font-semibold">Discussion Box</h2>
+          <button onClick={() => setIsChatOpen(false)} className="text-white text-xl">
+            <IoClose />
+          </button>
         </div>
-      )}
-    
-      {/* Chat Log */}
-      <div className="h-60 overflow-y-auto border p-2 rounded mb-1 bg-gray-50 flex flex-col gap-1">
-        {chatLog.map((msg, idx) => {
-          const isOwn = msg.sender === (user?.name || 'Anon');
-          return (
-            <div
-              key={idx}
-              className={`flex flex-col max-w-[80%] ${
-                isOwn ? 'ml-auto items-end' : 'items-start'
-              }`}
+
+        <div className="p-4 overflow-y-auto h-[calc(100%-4rem)] font-sans tracking-wide">
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={clearChat}
+              className="text-xs bg-red-400 text-white px-3 py-1 rounded hover:bg-red-500 transition"
             >
-              <div
-                className={`px-3 py-2 rounded-xl ${
-                  isOwn ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
-                }`}
-              >
-                <span className="block text-sm">{msg.message}</span>
-              </div>
-              <span className="text-xs text-gray-500 mt-0.5">
-                {isOwn ? 'You' : msg.sender} • {formatTime(msg.timestamp)}
-              </span>
+              Clear Chat
+            </button>
+          </div>
+
+          {members.length > 0 && (
+            <div className="text-sm text-gray-600 bg-white/70 border border-gray-200 rounded-md p-2 mb-2 shadow-inner">
+              👥 <strong>Members:</strong> {members.map((m) => m.name).join(', ')}
             </div>
-          );
-        })}
-      </div>
+          )}
 
-      {typingUsers.length > 0 && (
-        <p className="text-xs text-gray-500 italic mb-2">
-          {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
-        </p>
-      )}
+          <div className="h-60 overflow-y-auto border border-gray-200 p-3 rounded-lg mb-2 bg-white shadow-inner flex flex-col gap-1">
+            {chatLog.map((msg, idx) => {
+              const isOwn = msg.sender === (user?.name || 'Anon');
+              return (
+                <div
+                  key={idx}
+                  className={`flex flex-col max-w-[80%] ${
+                    isOwn ? 'ml-auto items-end' : 'items-start'
+                  }`}
+                >
+                  <div
+                    className={`px-4 py-2 rounded-xl ${
+                      isOwn ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
+                    }`}
+                  >
+                    <span className="block text-sm">{msg.message}</span>
+                  </div>
+                  <span className="text-xs text-gray-500 mt-0.5">
+                    {isOwn ? 'You' : msg.sender} • {formatTime(msg.timestamp)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
 
-      {/* Input */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          className="flex-grow border p-2 rounded"
-          placeholder="Type a message..."
-          value={message}
-          onChange={(e) => handleTyping(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Send
-        </button>
+          {typingUsers.length > 0 && (
+            <p className="text-xs text-gray-500 italic mb-2">
+              {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+            </p>
+          )}
+
+          {/* Input */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              className="flex-grow border border-gray-300 p-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Type a message..."
+              value={message}
+              onChange={(e) => handleTyping(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            />
+            <button
+              onClick={sendMessage}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Send
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

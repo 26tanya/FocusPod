@@ -156,7 +156,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
           <button
             onClick={handleStart}
             disabled={!isCreator && !isSolo}
-            className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all shadow-md disabled:opacity-50 cursor-not-allowed"
+            className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Start
           </button>
@@ -164,7 +164,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
           <button
             onClick={handlePause}
             disabled={!isCreator && !isSolo}
-            className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 transition-all shadow-md disabled:opacity-50 cursor-not-allowed"
+            className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Pause
           </button>
@@ -173,7 +173,7 @@ const FocusTimer = ({ roomCode, isSolo = false, initialDuration = 25, isCreator 
         <button
           onClick={handleReset}
           disabled={!isCreator && !isSolo}
-          className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all shadow-md disabled:opacity-50 cursor-not-allowed"
+          className="px-6 py-2 text-white rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Reset
         </button>

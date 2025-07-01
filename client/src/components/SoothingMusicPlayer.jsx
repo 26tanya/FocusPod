@@ -60,10 +60,10 @@ const SoothingMusicPlayer = () => {
   }, [currentTrackIndex]);
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 bg-gradient-to-br from-blue-100 to-purple-100 shadow-2xl border border-blue-300 rounded-2xl p-4 w-80">
+    <div className="z-40 bg-gradient-to-br from-blue-100 to-purple-100 shadow-2xl border border-blue-300 rounded-2xl p-4 w-80">
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-semibold text-gray-800 flex items-center gap-2 text-lg">
-          <FaMusic className="text-purple-600" /> Focus Music
+          <FaMusic className="text-purple-600" /> MuseMode
         </h3>
         <select
           value={currentTrack.name}
