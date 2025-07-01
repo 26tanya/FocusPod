@@ -74,8 +74,6 @@ cd FocusPod
 ```bash
 cd server
 npm install
-```
-
 # Create a `.env` file with:
 # MONGO_URI=your_mongodb_url
 # JWT_SECRET=your_secret_key
@@ -83,25 +81,26 @@ npm install
 # EMAIL_PASS=your_email_password
 # OPENROUTER_API_KEY=your_key
 
-```npm start```
+npm start
+```
 
 
 ###Frontend Setup
 ```bash
 cd client
 npm install
-npm start
+npm run dev
 ```
 
 ###📌 Project Structure
-
+```bash
 FocusPod/
 ├── client/         # React Frontend
 ├── server/         # Node.js Backend
 ├── README.md
+```
 
-
-📅 Upcoming Features
+###📅 **Upcoming Features**
 Productivity badges & leaderboards
 
 Distraction blocker browser extension
@@ -110,9 +109,9 @@ Session history & export
 
 Calendar-based analytics
 
-🙌 Contributing
+###🙌 **Contributions**
 Contributions are welcome! Feel free to fork this repo and submit a pull request.
 
-📄 License
+###📄 **License**
 This project is open source and available under the MIT License.
 
