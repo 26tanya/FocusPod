@@ -30,8 +30,8 @@ const Navbar = () => {
           <Link to="/about" className="hover:text-purple-600 flex items-center gap-1">
             <FaInfoCircle /> About
           </Link>
-          <Link to="/dashboard" className="hover:text-purple-600 flex items-center gap-1">
-            <FaUser /> Dashboard
+          <Link to="/profile" className="hover:text-purple-600 flex items-center gap-1">
+            <FaUser /> Profile
           </Link>
           {user ? (
             <button
